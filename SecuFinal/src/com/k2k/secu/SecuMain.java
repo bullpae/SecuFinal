@@ -3,16 +3,17 @@ package com.k2k.secu;
 import java.util.List;
 
 public class SecuMain {
+	
+	public static int inversePoly = 0;
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		// String a = "0100010111";
 		// String b = "0000101101";
 		int a = 0;
 		a = SetBit(a, 8);
 		a = SetBit(a, 4);
 		a = SetBit(a, 3);
-		a = SetBit(a, 2);
+		a = SetBit(a, 1);
 		a = SetBit(a, 0);
 
 		DisplayBit(a);
@@ -26,11 +27,21 @@ public class SecuMain {
 		DisplayBit(b);
 
 		System.out.println("PLOY_MUL=====");
-		
 		PolyMul(a, b);
 		
 		System.out.println("PLOY_DIY_Q=====");
 		PolyDivQ(a, b);
+		
+		// Multiplicative Inverse Based on EEA
+		System.out.println("Multiplicative Inverse Based on EEA=====");
+		InverseValEEA(a, b);
+		System.out.println("INVERSE=====");
+		DisplayBit(inversePoly);
+		
+		int ret = inversePoly^1;
+		System.out.println("FINAL INVERSE=====");
+		DisplayBit(ret);
+		
 	}
 	
 	public static int SetBit(int val, int pos) {
@@ -59,7 +70,7 @@ public class SecuMain {
 		int ret = 0;
 		int tmp = 0;
 		int idx = 0;
-		for (int i = bBin.length() - 1; i > 0; i--, idx++) {
+		for (int i = bBin.length() - 1; i >= 0; i--, idx++) {
 			if (bBin.getBytes()[i] == '1') {
 				tmp = a << idx;
 				//DisplayBit(tmp);
@@ -76,45 +87,110 @@ public class SecuMain {
 	public static int PolyDivQ(int a, int b) {
 		String aBin = Integer.toBinaryString(a);
 		String bBin = Integer.toBinaryString(b);
+		int subLen = aBin.length() - bBin.length();
 		
-		System.out.println("a: " + a);
-		System.out.println("b: " + b);
+		//System.out.println("a: " + a + " Len: " + aBin.length());
+		//System.out.println("b: " + b + " Len: " + bBin.length());
 		
 		int ret = a;
 		int tmp = 0;
 		int quot = 0;
-		int aRealLen = aBin.length() - 1;
-		for (int i = bBin.length() - 1; i > 0; i--) {
+		
+		while ((subLen--) != 0) {
 			String divA = Integer.toBinaryString(ret);
+
+			//System.out.println("ret: " + ret + " Len: " + divA.length());
 			
-			//int maxIdx = divA.length() - 1;
-			for (int maxIdx = divA.length() - 1; maxIdx >= 0; maxIdx--) {
-				if (divA.getBytes()[maxIdx] == '1') {
-					quot += SetBit(quot, maxIdx - (bBin.length()));
-					tmp = b << i - (bBin.length());
-					DisplayBit(tmp);
-					ret ^= tmp;
-					DisplayBit(ret);
-				}
-			}
+			int maxIdx = divA.length() - 1;
+			//if (divA.getBytes()[maxIdx] == '1') {
+				quot = SetBit(quot, maxIdx - (bBin.length() - 1));
+				
+				tmp = b << maxIdx - (bBin.length() - 1);
+				//DisplayBit(tmp);
+				//DisplayBit(ret);
+				ret ^= tmp;
+				//DisplayBit(ret);
+				//System.out.println("END");
+			//}
+
 		}
 		
-//		for (int i = aRealLen; i > (bBin.length() - 1); i--) {
-//			String divA = Integer.toBinaryString(ret);
-//			int maxIdx = divA.length() - 1;
-//			if (divA.getBytes()[maxIdx] == '1') {
-//				quot += SetBit(quot, maxIdx - (bBin.length()));
-//				tmp = b << i - (bBin.length());
-//				DisplayBit(tmp);
-//				ret ^= tmp;
-//				DisplayBit(ret);
-//			}
-//		}
-		
-		DisplayBit(ret);
-		
-		DisplayBit(quot);
 
+//		System.out.println("RET");
+//		DisplayBit(ret);
+//		System.out.println("QUOT");
+//		DisplayBit(quot);
+
+		return quot;
+	}
+	
+	public static int PolyDivR(int a, int b) {
+		String aBin = Integer.toBinaryString(a);
+		String bBin = Integer.toBinaryString(b);
+		int subLen = aBin.length() - bBin.length();
+		
+		//System.out.println("a: " + a + " Len: " + aBin.length());
+		//System.out.println("b: " + b + " Len: " + bBin.length());
+		
+		int ret = a;
+		int tmp = 0;
+		int quot = 0;
+		
+		while ((subLen--) != 0) {
+			String divA = Integer.toBinaryString(ret);
+
+			//System.out.println("ret: " + ret + " Len: " + divA.length());
+			
+			int maxIdx = divA.length() - 1;
+			//if (divA.getBytes()[maxIdx] == '1') {
+				quot = SetBit(quot, maxIdx - (bBin.length() - 1));
+				
+				tmp = b << maxIdx - (bBin.length() - 1);
+				//DisplayBit(tmp);
+				//DisplayBit(ret);
+				ret ^= tmp;
+				//DisplayBit(ret);
+				//System.out.println("END");
+			//}
+
+		}
+		
+
+//		System.out.println("RET");
+//		DisplayBit(ret);
+//		System.out.println("QUOT");
+//		DisplayBit(quot);
+
+		return ret;
+	}
+	
+	public static int InverseValEEA(int a, int b) {
+		System.out.println("A: " + a + " B: " + b);
+		DisplayBit(a);
+		DisplayBit(b);
+		
+		int ret = 0;
+		int q = PolyDivQ(a, b);
+		int r = PolyDivR(a, b);
+		System.out.println("Q: " + q + " R: " + r);
+		DisplayBit(q);
+		DisplayBit(r);
+		
+		if (r == 1) {
+			inversePoly = PolyMul(q, 1);
+//			System.out.println("inversePoly: " + inversePoly);
+//			DisplayBit(inversePoly);
+			
+			System.out.println("INN inversePoly: " + inversePoly);
+			inversePoly = PolyMul(q, inversePoly);
+		} else {
+			ret = InverseValEEA(b, r);
+//			System.out.println("INN inversePoly: " + inversePoly);
+//			inversePoly = PolyMul(q, inversePoly);
+			
+			System.out.println("inversePoly: " + inversePoly);
+			DisplayBit(inversePoly);
+		}
 		return ret;
 	}
 
